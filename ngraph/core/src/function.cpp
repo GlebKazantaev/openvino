@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <list>
 #include <memory>
+#include <thread>
 
 #include "itt.hpp"
 #include "ngraph/factory_adapter.hpp"
@@ -77,25 +78,173 @@ Function::Function(const std::shared_ptr<Node>& result,
 {
 }
 
+class ParallelScheduler
+{
+public:
+    explicit ParallelScheduler(const NodeVector & nodes)
+    {
+        m_nodes_count = nodes.size();
+        m_processed_nodes_count = 0;
+        for (auto & node : nodes)
+        {
+            if (op::is_constant(node) || op::is_parameter(node))
+            {
+                m_nodes_queue.push_back(node);
+            }
+        }
+    }
+
+    ~ParallelScheduler()
+    {
+        std::cout << "Summary: " << std::endl;
+        std::cout << "  Nodes   count: " << get_nodes_count() << std::endl;
+        std::cout << "  Threads count: " << unique_threads.size() << std::endl;
+        for (auto & item : unique_threads)
+        {
+            cout << "       T: " << item.first << " : " << item.second << std::endl;
+        }
+    }
+
+    std::shared_ptr<Node> get_next_node()
+    {
+        std::lock_guard<std::mutex> lock(m);
+        if (m_nodes_queue.empty())
+        {
+            return nullptr;
+        }
+        else
+        {
+            auto node = m_nodes_queue.front();
+            m_nodes_queue.pop_front();
+            return node;
+        }
+    }
+
+    void register_next_node(std::shared_ptr<Node> node)
+    {
+        std::lock_guard<std::mutex> lock(m);
+        m_nodes_queue.push_back(node);
+    }
+
+    void register_success(std::shared_ptr<Node> node)
+    {
+        std::lock_guard<std::mutex> lock(m2);
+        for (auto & output : node->outputs())
+        {
+            used.insert(output);
+        }
+        ++m_processed_nodes_count;
+    }
+
+    bool is_used(const Output<Node> & output)
+    {
+        return used.count(output) != 0;
+    }
+
+    void log(thread::id id)
+    {
+        std::lock_guard<std::mutex> lock(m_print);
+        if (unique_threads.count(id))
+        {
+            unique_threads[id]++;
+        }
+        else
+        {
+            unique_threads[id] = 1;
+        }
+    }
+
+    const size_t get_nodes_count() { return m_nodes_count; }
+    const size_t get_processed_nodes_count() { return m_processed_nodes_count; }
+private:
+    std::mutex m_print;
+    std::map<thread::id, size_t> unique_threads;
+
+    std::mutex m;
+    std::mutex m2;
+    std::set<Output<Node>> used;
+    std::deque<std::shared_ptr<Node>> m_nodes_queue;
+    size_t m_nodes_count;
+    size_t m_processed_nodes_count;
+};
+
 void Function::validate_nodes_and_infer_types()
 {
     OV_ITT_SCOPED_TASK(itt::domains::nGraph, "Function::validate_nodes_and_infer_types");
 
-    for (auto& node : get_ordered_ops())
-    {
-        node->revalidate_and_infer_types();
+    ParallelScheduler scheduler(get_ordered_ops());
 
-        // If we find a parameter make sure it is in the list of parameters of the function
-        if (op::is_parameter(node))
+    auto validate_node = [&scheduler]() {
+        auto node_is_ready = [&scheduler](std::shared_ptr<Node> node) -> bool
         {
-            auto it = std::find(m_parameters.begin(), m_parameters.end(), node);
-            if (it == m_parameters.end())
+            for (auto & input : node->input_values())
             {
-                throw ngraph_error("Function references undeclared parameter");
+                if (!scheduler.is_used(input))
+                {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        while(scheduler.get_processed_nodes_count() < scheduler.get_nodes_count())
+        {
+            auto node = scheduler.get_next_node();
+            if (!node) continue;
+
+            node->validate_and_infer_types();
+            scheduler.register_success(node);
+//            scheduler.log(std::this_thread::get_id());
+
+            for (auto & output : node->outputs())
+            {
+                auto next_node = output.get_node()->shared_from_this();
+                if (node_is_ready(next_node))
+                {
+                    scheduler.register_next_node(next_node);
+                }
             }
         }
-    }
+    };
+
+    std::thread t1(validate_node);
+    std::thread t2(validate_node);
+    std::thread t3(validate_node);
+    std::thread t4(validate_node);
+//    std::thread t5(validate_node);
+//    std::thread t6(validate_node);
+//    std::thread t7(validate_node);
+//    std::thread t8(validate_node);
+
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+//    t5.join();
+//    t6.join();
+//    t7.join();
+//    t8.join();
 }
+
+//void Function::validate_nodes_and_infer_types()
+//{
+//    OV_ITT_SCOPED_TASK(itt::domains::nGraph, "Function::validate_nodes_and_infer_types");
+//
+//    for (auto& node : get_ordered_ops())
+//    {
+//        node->revalidate_and_infer_types();
+//
+//        // If we find a parameter make sure it is in the list of parameters of the function
+//        if (op::is_parameter(node))
+//        {
+//            auto it = std::find(m_parameters.begin(), m_parameters.end(), node);
+//            if (it == m_parameters.end())
+//            {
+//                throw ngraph_error("Function references undeclared parameter");
+//            }
+//        }
+//    }
+//}
 
 std::vector<shared_ptr<Node>> Function::get_ordered_ops() const
 {
