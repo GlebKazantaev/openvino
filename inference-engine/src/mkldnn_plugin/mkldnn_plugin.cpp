@@ -106,11 +106,11 @@ static void Transformation(ICNNNetwork::Ptr& clonedNetwork) {
     };
 
     for (auto & precision : convert_precision_list) {
-        manager.register_pass<ngraph::pass::ConvertPrecision>(precision.first, precision.second);
+        // manager.register_pass<ngraph::pass::ConvertPrecision>(precision.first, precision.second);
     }
 
     manager.register_pass<ngraph::pass::ConvertOpSet1ToLegacy>();
-    manager.register_pass<ngraph::pass::ConvertPrecision>(ngraph::element::i64, ngraph::element::i32);
+//    manager.register_pass<ngraph::pass::ConvertPrecision>(ngraph::element::i64, ngraph::element::i32);
 
     manager.set_callback(transformations_callback);
     manager.run_passes(nGraphFunc);
@@ -125,7 +125,7 @@ static void Transformation(ICNNNetwork::Ptr& clonedNetwork) {
     // WA: after conversion to CNNNetwork user precision can redefine input/output precisions
     // so we need to apply additional precision conversion but only for inputs and outputs
     for (auto & precision : convert_precision_list) {
-        NetPass::ConvertIOPrecision(*clonedNetwork, convertPrecision(precision.first), convertPrecision(precision.second));
+        // NetPass::ConvertIOPrecision(*clonedNetwork, convertPrecision(precision.first), convertPrecision(precision.second));
     }
 }
 
@@ -164,7 +164,6 @@ Engine::LoadExeNetworkImpl(const InferenceEngine::ICNNNetwork &network, const st
     bool is_transformed = false;
     if (clonedNetwork->getFunction()) {
         Transformation(clonedNetwork);
-        is_transformed = true;
     }
     auto implNetwork = std::dynamic_pointer_cast<details::CNNNetworkImpl>(clonedNetwork);
     if (implNetwork) {
