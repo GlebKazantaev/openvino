@@ -151,6 +151,7 @@ static void Transformation(ICNNNetwork::Ptr& clonedNetwork, const Config& conf) 
     pass_config->enable<ngraph::pass::ConvertPadToGroupConvolution>();
 
     manager.run_passes(nGraphFunc);
+//    manager.run_passes(nGraphFunc);
 
 #ifndef USE_CNNNETWORK_LPT
     using namespace ngraph::pass::low_precision;
@@ -192,6 +193,7 @@ static void Transformation(ICNNNetwork::Ptr& clonedNetwork, const Config& conf) 
     });
 
     legacyManager.run_passes(nGraphFunc);
+//    legacyManager.run_passes(nGraphFunc);
 
     clonedNetwork = InferenceEngine::details::convertFunctionToICNNNetwork(nGraphFunc, *clonedNetwork);
 
