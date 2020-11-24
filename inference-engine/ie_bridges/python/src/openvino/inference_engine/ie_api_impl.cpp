@@ -615,8 +615,8 @@ PyObject *InferenceEnginePython::IECore::getConfig(const std::string &deviceName
     return parse_parameter(param);
 }
 
-void InferenceEnginePython::ApplyMOCTransformations(InferenceEnginePython::IENetwork network) {
+void InferenceEnginePython::ApplyMOCTransformations(InferenceEnginePython::IENetwork network, bool cf) {
     ngraph::pass::Manager manager;
-    manager.register_pass<MOCTransformations>();
+    manager.register_pass<MOCTransformations>(cf);
     manager.run_passes(network.actual->getFunction());
 }
