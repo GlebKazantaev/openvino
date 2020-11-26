@@ -302,12 +302,6 @@ bool is_exec_graph(const ngraph::Function& f) {
 }
 
 bool resolve_dynamic_shapes(const ngraph::Function& f) {
-    const auto & f_results = f.get_results();
-    if (std::all_of(f_results.begin(), f_results.end(),
-            [](std::shared_ptr<Node> results) { return !results->is_dynamic(); })) {
-        return false;
-    }
-
     auto f_clone = ngraph::clone_function(f);
 
     const auto & f_ops = f.get_ordered_ops();
