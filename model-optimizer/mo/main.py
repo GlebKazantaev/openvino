@@ -291,6 +291,8 @@ def main(cli_parser: argparse.ArgumentParser, framework: str):
         if framework:
             argv.framework = framework
 
+        argv.static_shape = True
+
         ov_update_message = None
         if not hasattr(argv, 'silent') or not argv.silent:
             ov_update_message = get_ov_update_message()
