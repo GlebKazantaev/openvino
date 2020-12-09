@@ -288,6 +288,7 @@ def main(cli_parser: argparse.ArgumentParser, framework: str):
         init_logger('ERROR', False)
 
         argv = cli_parser.parse_args()
+        print("StaticShape is ", argv.static_shape)
         if framework:
             argv.framework = framework
 
