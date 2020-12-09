@@ -57,27 +57,27 @@ bool ngraph::pass::CommonOptimizations::run_on_function(std::shared_ptr<ngraph::
 
     // This pass must be called first in pipeline
     manager.register_pass<ngraph::pass::InitNodeInfo>();
-    manager.register_pass<ngraph::pass::RemoveFilteringBoxesBySize>(); // Resolves dynamism (replaces NonZero), CF needed
-    manager.register_pass<ngraph::pass::ConvertQuantizeDequantize>();
-    manager.register_pass<ngraph::pass::ConstantFolding>();
-    manager.register_pass<ngraph::pass::StridedSliceOptimization>(); // depends on CF
-    manager.register_pass<ngraph::pass::AlgebraicSimplification>(); // may introduce fake dynamism
-    manager.register_pass<ngraph::pass::NopElimination>(); // may introduce fake dynamism
-    manager.register_pass<ngraph::pass::ConstantFolding>();
-
-    auto common_fusions = manager.register_pass<ngraph::pass::GraphRewrite>();
-    common_fusions->add_matcher<ngraph::pass::ConvertScatterElementsToScatter>(); // partially depends on CF
-    common_fusions->add_matcher<ngraph::pass::DepthToSpaceFusion>();
-    common_fusions->add_matcher<ngraph::pass::MishFusion>();
-    common_fusions->add_matcher<ngraph::pass::SoftPlusFusion>();
-    common_fusions->add_matcher<ngraph::pass::SoftPlusToMishFusion>();
-    common_fusions->add_matcher<ngraph::pass::SwishFusion>();
-    common_fusions->add_matcher<ngraph::pass::HSwishFusion>();
-    common_fusions->add_matcher<ngraph::pass::HSigmoidFusion>();
-    common_fusions->add_matcher<ngraph::pass::ConvertPadToGroupConvolution, false>();
-    common_fusions->add_matcher<ngraph::pass::NormalizeL2Fusion>();
-    common_fusions->set_name("ngraph::pass::CommonFusions");
-
+//    manager.register_pass<ngraph::pass::RemoveFilteringBoxesBySize>(); // Resolves dynamism (replaces NonZero), CF needed
+//    manager.register_pass<ngraph::pass::ConvertQuantizeDequantize>();
+//    manager.register_pass<ngraph::pass::ConstantFolding>();
+//    manager.register_pass<ngraph::pass::StridedSliceOptimization>(); // depends on CF
+//    manager.register_pass<ngraph::pass::AlgebraicSimplification>(); // may introduce fake dynamism
+//    manager.register_pass<ngraph::pass::NopElimination>(); // may introduce fake dynamism
+//    manager.register_pass<ngraph::pass::ConstantFolding>();
+//
+//    auto common_fusions = manager.register_pass<ngraph::pass::GraphRewrite>();
+//    common_fusions->add_matcher<ngraph::pass::ConvertScatterElementsToScatter>(); // partially depends on CF
+//    common_fusions->add_matcher<ngraph::pass::DepthToSpaceFusion>();
+//    common_fusions->add_matcher<ngraph::pass::MishFusion>();
+//    common_fusions->add_matcher<ngraph::pass::SoftPlusFusion>();
+//    common_fusions->add_matcher<ngraph::pass::SoftPlusToMishFusion>();
+//    common_fusions->add_matcher<ngraph::pass::SwishFusion>();
+//    common_fusions->add_matcher<ngraph::pass::HSwishFusion>();
+//    common_fusions->add_matcher<ngraph::pass::HSigmoidFusion>();
+//    common_fusions->add_matcher<ngraph::pass::ConvertPadToGroupConvolution, false>();
+//    common_fusions->add_matcher<ngraph::pass::NormalizeL2Fusion>();
+//    common_fusions->set_name("ngraph::pass::CommonFusions");
+//
     auto decomp = manager.register_pass<ngraph::pass::GraphRewrite>();
     decomp->add_matcher<ngraph::pass::BidirectionalLSTMSequenceDecomposition>();
     decomp->add_matcher<ngraph::pass::BidirectionalRNNSequenceDecomposition>();
@@ -115,15 +115,15 @@ bool ngraph::pass::CommonOptimizations::run_on_function(std::shared_ptr<ngraph::
     conv_fusions->add_matcher<ngraph::pass::ConvolutionBackpropDataMultiplyFusion>();
     conv_fusions->add_matcher<ngraph::pass::GroupConvolutionBackpropDataMultiplyFusion>();
     conv_fusions->set_name("ngraph::pass::ConvFusions");
-
-    manager.register_pass<ngraph::pass::ConstantFolding>();
-//    manager.register_pass<ngraph::pass::ConvertInterpolate1ToInterpolate4, false>();
-
-    auto fq_fusions = manager.register_pass<ngraph::pass::GraphRewrite>();
-    fq_fusions->add_matcher<ngraph::pass::FakeQuantizeMulFusion>();
-    fq_fusions->add_matcher<ngraph::pass::FakeQuantizeReshapeFusion>();
-    fq_fusions->add_matcher<ngraph::pass::PullTransposeThroughFQUp>();
-    fq_fusions->set_name("ngraph::pass::FakeQuantizeFusions");
+//
+//    manager.register_pass<ngraph::pass::ConstantFolding>();
+////    manager.register_pass<ngraph::pass::ConvertInterpolate1ToInterpolate4, false>();
+//
+//    auto fq_fusions = manager.register_pass<ngraph::pass::GraphRewrite>();
+//    fq_fusions->add_matcher<ngraph::pass::FakeQuantizeMulFusion>();
+//    fq_fusions->add_matcher<ngraph::pass::FakeQuantizeReshapeFusion>();
+//    fq_fusions->add_matcher<ngraph::pass::PullTransposeThroughFQUp>();
+//    fq_fusions->set_name("ngraph::pass::FakeQuantizeFusions");
 
     return manager.run_passes(f);
 }
