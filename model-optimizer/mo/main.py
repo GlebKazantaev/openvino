@@ -255,8 +255,8 @@ def emit_ir(graph: Graph, argv: argparse.Namespace):
         from openvino.inference_engine.offline_api import ApplyMOCTransformations, ApplyMOCTransformationsCPU
         ie = IECore()
         net = ie.read_network(model=orig_model_name + ".xml", weights=orig_model_name + ".bin")
-        # ApplyMOCTransformations(net, True)
-        ApplyMOCTransformationsCPU(net)
+        ApplyMOCTransformations(net, True)
+        # ApplyMOCTransformationsCPU(net)
         net.serialize(orig_model_name + ".xml", orig_model_name + ".bin")
 
         print('\n[ SUCCESS ] Serialize-Read-Serialize')
