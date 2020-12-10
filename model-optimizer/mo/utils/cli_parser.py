@@ -321,7 +321,7 @@ def get_common_cli_parser(parser: argparse.ArgumentParser = None):
                               help='Enables IR generation for fixed input shape (folding `ShapeOf` operations and '
                                    'shape-calculating sub-graphs to `Constant`). Changing model input shape using '
                                    'the Inference Engine API in runtime may fail for such an IR.',
-                              action='store_true', default=False)
+                              action='store_true', default=True)
     common_group.add_argument('--keep_shape_ops',
                               help='The option is ignored. Expected behavior is enabled by default.',
                               action=IgnoredAction, default=True)
