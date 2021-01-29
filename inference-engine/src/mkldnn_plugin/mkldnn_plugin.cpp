@@ -104,12 +104,20 @@ static void Transformation(CNNNetwork& clonedNetwork, const Config& conf) {
     // WA: ConvertPriorBox must be executed before the 1st ConstantFolding pass
     manager.register_pass<ngraph::pass::ConvertPriorBox>();
     manager.register_pass<ngraph::pass::ConvertNMS5ToLegacyMatcher>();
+
     manager.register_pass<ngraph::pass::CommonOptimizations>();
+    manager.register_pass<ngraph::pass::CommonOptimizations>();
+
     manager.register_pass<ngraph::pass::ConvertRNNSequenceToTensorIterator>();
     manager.register_pass<ngraph::pass::ConvertGRUSequenceToTensorIterator>();
     manager.register_pass<ngraph::pass::ConvertLSTMSequenceToTensorIterator>();
+
     manager.register_pass<ngraph::pass::ConvertOpSet3ToOpSet2>();
+    manager.register_pass<ngraph::pass::ConvertOpSet3ToOpSet2>();
+
     manager.register_pass<ngraph::pass::ConvertOpSet2ToOpSet1>();
+    manager.register_pass<ngraph::pass::ConvertOpSet2ToOpSet1>();
+
     manager.register_pass<ngraph::pass::ConvertTensorIteratorToGRUSequence>();
     manager.register_pass<ngraph::pass::ConvertTensorIteratorToLSTMSequence>();
     manager.register_pass<ngraph::pass::ConvertTensorIteratorToRNNSequence>();
@@ -128,6 +136,7 @@ static void Transformation(CNNNetwork& clonedNetwork, const Config& conf) {
     };
 
     for (auto &precision : convert_precision_list) {
+        manager.register_pass<ngraph::pass::ConvertPrecision>(precision.first, precision.second);
         manager.register_pass<ngraph::pass::ConvertPrecision>(precision.first, precision.second);
     }
 
@@ -229,6 +238,8 @@ static void Transformation(CNNNetwork& clonedNetwork, const Config& conf) {
 
     ngraph::pass::Manager legacyManager;
     legacyManager.register_pass<ngraph::pass::ConvertOpSet1ToLegacy>();
+    legacyManager.register_pass<ngraph::pass::ConvertOpSet1ToLegacy>();
+
     legacyManager.register_pass<ngraph::pass::ConvertPrecision>(ngraph::element::i64, ngraph::element::i32);
     // not legacy actually, but it should be the last transformation in the transformation pipeline
     legacyManager.register_pass<ngraph::pass::UnrollTensorIterator>();
