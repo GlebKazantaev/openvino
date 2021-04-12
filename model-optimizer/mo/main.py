@@ -293,16 +293,20 @@ def emit_ir(graph: Graph, argv: argparse.Namespace):
         # produced by prepare_ir. This IR needs to be renamed from XXX_tmp.xml to XXX.xml
         suffixes = [".xml", ".bin", ".mapping"]
         if return_code != 0:
-            print("[ WARNING ] Using fallback to produce IR")
-            for suf in suffixes:
-                # remove existing files
-                path_to_file = orig_model_name + suf
-                if os.path.exists(path_to_file):
-                    os.remove(path_to_file)
-
-                # rename tmp IR to original name
-                os.rename(orig_model_name + "_tmp" + suf, orig_model_name + suf)
+            raise Exception("IE offline transformations has failed!")
         else:
+            from openvino.test_utils import CompareNetworks
+            from openvino.inference_engine import read_network_without_extensions
+
+            net = read_network_without_extensions(orig_model_name + ".xml", orig_model_name + ".bin")
+            net_ref = read_network_without_extensions(orig_model_name + "_tmp.xml", orig_model_name + "_tmp.bin")
+
+            resp, msg = CompareNetworks(net, net_ref)
+            if not resp:
+                raise Exception(msg)
+            else:
+                print("[ SUCCESS ] IRs Comparision Successfully Passed")
+
             for suf in suffixes:
                 # remove existing files
                 path_to_file = orig_model_name + "_tmp" + suf
