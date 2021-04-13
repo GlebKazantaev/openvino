@@ -268,16 +268,23 @@ def emit_ir(graph: Graph, argv: argparse.Namespace):
         return_code = "not executed"
         # This try-except is additional reinsurance that the IE
         # dependency search does not break the MO pipeline
-        try:
-            if not argv.use_fallback and find_ie_version(silent=True):
-                path_to_offline_transformations = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'back',
-                                                               'offline_transformations.py')
-                status = subprocess.run([sys.executable, path_to_offline_transformations, "--path_to_model", orig_model_name], env=os.environ, timeout=10)
-                return_code = status.returncode
-                if return_code != 0 and not argv.silent:
-                    print("[ WARNING ] offline_transformations return code {}".format(return_code))
-        except Exception as e:
-            pass
+        if not argv.use_fallback and find_ie_version(silent=True):
+            path_to_offline_transformations = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'back',
+                                                           'offline_transformations.py')
+            status = subprocess.run([sys.executable, path_to_offline_transformations, "--path_to_model", orig_model_name], env=os.environ, timeout=10)
+            return_code = status.returncode
+            if return_code != 0:
+                print("[ WARNING ] offline_transformations return code {}".format(return_code))
+                raise Exception("IR generation has failed1!!!")
+
+            # Compare IRs
+            path_to_compare_irs = os.path.join(os.path.realpath(os.path.dirname(__file__)), 'back', 'compare_irs.py')
+            status = subprocess.run([sys.executable, path_to_compare_irs, "--path_to_xml", orig_model_name + ".xml", "--path_to_bin", orig_model_name + ".bin",
+                                                                          "--path_to_ref_xml", orig_model_name + "_tmp.xml", "--path_to_ref_bin", orig_model_name + "_tmp.bin"], env=os.environ, timeout=10)
+            return_code = status.returncode
+            if return_code != 0:
+                print("[ WARNING ] offline_transformations return code {}".format(return_code))
+                raise Exception("IR generation has failed2!!!")
 
         message = str(dict({
             "platform": platform.system(),
@@ -292,32 +299,18 @@ def emit_ir(graph: Graph, argv: argparse.Namespace):
         # if IR wasn't produced by offline_transformations step we need to fallback to IR
         # produced by prepare_ir. This IR needs to be renamed from XXX_tmp.xml to XXX.xml
         suffixes = [".xml", ".bin", ".mapping"]
-        if return_code != 0:
-            raise Exception("IE offline transformations has failed!")
-        else:
-            from openvino.test_utils import CompareNetworks
-            from openvino.inference_engine import read_network_without_extensions
 
-            net = read_network_without_extensions(orig_model_name + ".xml", orig_model_name + ".bin")
-            net_ref = read_network_without_extensions(orig_model_name + "_tmp.xml", orig_model_name + "_tmp.bin")
+        for suf in suffixes:
+            # remove existing files
+            path_to_file = orig_model_name + "_tmp" + suf
+            if os.path.exists(path_to_file):
+                os.remove(path_to_file)
 
-            resp, msg = CompareNetworks(net, net_ref)
-            if not resp:
-                raise Exception(msg)
-            else:
-                print("[ SUCCESS ] IRs Comparision Successfully Passed")
-
-            for suf in suffixes:
-                # remove existing files
-                path_to_file = orig_model_name + "_tmp" + suf
-                if os.path.exists(path_to_file):
-                    os.remove(path_to_file)
-
-            # add meta information to IR
-            append_ir_info(file=orig_model_name,
-                           meta_info=get_meta_info(argv),
-                           mean_data=mean_data,
-                           input_names=input_names)
+        # add meta information to IR
+        append_ir_info(file=orig_model_name,
+                       meta_info=get_meta_info(argv),
+                       mean_data=mean_data,
+                       input_names=input_names)
 
         print('[ SUCCESS ] Generated IR version {} model.'.format(get_ir_version(argv)))
         print('[ SUCCESS ] XML file: {}.xml'.format(orig_model_name))
