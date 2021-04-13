@@ -11,7 +11,8 @@ set(CMAKE_PDB_OUTPUT_DIRECTORY ${PYTHON_BRIDGE_OUTPUT_DIRECTORY}/offline_transfo
 
 file(GLOB SOURCE
         ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api.pyx
-        ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api_impl.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api_impl.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/ngraph_test_utils.cpp)
 
 set_source_files_properties(${SOURCE} PROPERTIES CYTHON_IS_CXX ON)
 
@@ -32,12 +33,6 @@ if(TARGET offline_transformations)
     list(APPEND InferenceEngine_LIBRARIES offline_transformations)
 else()
     list(APPEND InferenceEngine_LIBRARIES IE::offline_transformations)
-endif()
-
-if(TARGET commonTestUtils)
-    list(APPEND InferenceEngine_LIBRARIES commonTestUtils)
-else()
-    list(APPEND InferenceEngine_LIBRARIES IE::commonTestUtils)
 endif()
 
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../inference_engine")

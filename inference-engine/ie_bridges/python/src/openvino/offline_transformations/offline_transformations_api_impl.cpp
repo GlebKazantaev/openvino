@@ -8,7 +8,7 @@
 #include <moc_transformations.hpp>
 #include <pruning.hpp>
 
-#include <common_test_utils/ngraph_test_utils.hpp>
+#include "ngraph_test_utils.hpp"
 #include <transformations/control_flow/unroll_tensor_iterator.hpp>
 
 #include <ngraph/pass/constant_folding.hpp>
@@ -68,3 +68,4 @@ std::pair<bool, std::string> InferenceEnginePython::CompareNetworks(InferenceEng
                                                                     InferenceEnginePython::IENetwork rhs) {
     return compare_functions(lhs.actual->getFunction(), rhs.actual->getFunction(), true, true, false, true);
 }
+
