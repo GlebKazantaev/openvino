@@ -8,6 +8,7 @@
 #include <moc_transformations.hpp>
 #include <pruning.hpp>
 
+#include <common_test_utils/ngraph_test_utils.hpp>
 #include <transformations/control_flow/unroll_tensor_iterator.hpp>
 
 #include <ngraph/pass/constant_folding.hpp>
@@ -61,4 +62,9 @@ void InferenceEnginePython::CheckAPI() {
     auto reshape = f->get_result()->input_value(0).get_node_shared_ptr();
     assert(std::dynamic_pointer_cast<ngraph::opset6::Parameter>(reshape->input_value(0).get_node_shared_ptr()));
     assert(std::dynamic_pointer_cast<ngraph::opset6::Constant>(reshape->input_value(1).get_node_shared_ptr()));
+}
+
+std::pair<bool, std::string> InferenceEnginePython::CompareNetworks(InferenceEnginePython::IENetwork lhs,
+                                                                    InferenceEnginePython::IENetwork rhs) {
+    return compare_functions(lhs.actual->getFunction(), rhs.actual->getFunction(), true, true, false, true);
 }

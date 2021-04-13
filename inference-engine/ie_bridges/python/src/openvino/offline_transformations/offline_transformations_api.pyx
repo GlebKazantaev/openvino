@@ -6,6 +6,7 @@ from ..inference_engine.ie_api cimport IENetwork
 
 from libcpp cimport bool
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 
 def ApplyMOCTransformations(IENetwork network, bool cf):
     C.ApplyMOCTransformations(network.impl, cf)
@@ -21,3 +22,8 @@ def GenerateMappingFile(IENetwork network, string path):
 
 def CheckAPI():
     C.CheckAPI()
+
+def CompareNetworks(IENetwork lhs, IENetwork rhs):
+    cdef pair[bool, string] c_pair
+    c_pair = C.CompareNetworks(lhs.impl, rhs.impl)
+    return c_pair

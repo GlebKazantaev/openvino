@@ -34,6 +34,12 @@ else()
     list(APPEND InferenceEngine_LIBRARIES IE::offline_transformations)
 endif()
 
+if(TARGET commonTestUtils)
+    list(APPEND InferenceEngine_LIBRARIES commonTestUtils)
+else()
+    list(APPEND InferenceEngine_LIBRARIES IE::commonTestUtils)
+endif()
+
 target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_SOURCE_DIR}/../inference_engine")
 target_link_libraries(${TARGET_NAME} PRIVATE ${InferenceEngine_LIBRARIES})
 
