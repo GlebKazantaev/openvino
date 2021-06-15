@@ -11,6 +11,8 @@ set(CMAKE_PDB_OUTPUT_DIRECTORY ${PYTHON_BRIDGE_OUTPUT_DIRECTORY}/offline_transfo
 
 set(SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api_impl_defs.pxd
             ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api.pyx
+            ${CMAKE_CURRENT_SOURCE_DIR}/ngraph_test_utils.hpp
+            ${CMAKE_CURRENT_SOURCE_DIR}/ngraph_test_utils.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api_impl.hpp
             ${CMAKE_CURRENT_SOURCE_DIR}/offline_transformations_api_impl.cpp)
 

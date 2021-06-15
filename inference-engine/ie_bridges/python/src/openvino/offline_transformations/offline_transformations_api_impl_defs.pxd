@@ -3,6 +3,7 @@
 
 from libcpp cimport bool
 from libcpp.string cimport string
+from libcpp.pair cimport pair
 
 from ..inference_engine.ie_api_impl_defs cimport IENetwork
 
@@ -18,3 +19,5 @@ cdef extern from "offline_transformations_api_impl.hpp" namespace "InferenceEngi
     cdef void GenerateMappingFile(IENetwork network, string path, bool extract_names)
 
     cdef void CheckAPI()
+
+    cdef pair[bool, string] CompareNetworks(IENetwork lhs, IENetwork rhs)

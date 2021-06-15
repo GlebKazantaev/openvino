@@ -23,4 +23,6 @@ void GenerateMappingFile(InferenceEnginePython::IENetwork network, std::string p
 
 void CheckAPI();
 
+std::pair<bool, std::string> CompareNetworks(InferenceEnginePython::IENetwork, InferenceEnginePython::IENetwork);
+
 };  // namespace InferenceEnginePython

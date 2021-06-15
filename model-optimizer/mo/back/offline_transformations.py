@@ -23,9 +23,10 @@ def apply_offline_transformations(input_model: str, framework: str, transforms: 
     extract_names = framework in ['tf', 'mxnet', 'kaldi']
 
     from openvino.inference_engine import read_network  # pylint: disable=import-error,no-name-in-module
-    from openvino.offline_transformations import ApplyMOCTransformations, GenerateMappingFile  # pylint: disable=import-error,no-name-in-module
+    from openvino.offline_transformations import ApplyMOCTransformations, GenerateMappingFile, CompareNetworks  # pylint: disable=import-error,no-name-in-module
 
     net = read_network(input_model + "_tmp.xml", input_model + "_tmp.bin")
+    net1 = read_network(input_model + "_tmp.xml", input_model + "_tmp.bin")
 
     available_transformations = get_available_transformations()
 
@@ -36,6 +37,11 @@ def apply_offline_transformations(input_model: str, framework: str, transforms: 
         available_transformations[name](net, **args)
 
     ApplyMOCTransformations(net, False)
+
+    resp, msg = CompareNetworks(net, net1)
+    if not resp:
+        raise Error("CompareNetworks error: {}".format(msg))
+    print("[ SUCCESS ] IR Comparator returned true")
     net.serialize(input_model + ".xml", input_model + ".bin")
     path_to_mapping = input_model + ".mapping"
     GenerateMappingFile(net, path_to_mapping.encode('utf-8'), extract_names)

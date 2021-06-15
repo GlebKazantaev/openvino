@@ -7,7 +7,13 @@ from ..inference_engine.ie_api cimport IENetwork
 from libcpp cimport bool
 from libcpp.string cimport string
 from libc.stdint cimport int64_t
+from libcpp.pair cimport pair
 
+
+def CompareNetworks(IENetwork lhs, IENetwork rhs):
+    cdef pair[bool, string] c_pair
+    c_pair = C.CompareNetworks(lhs.impl, rhs.impl)
+    return c_pair
 
 def ApplyMOCTransformations(IENetwork network, bool cf):
     C.ApplyMOCTransformations(network.impl, cf)
